@@ -93,9 +93,27 @@ When you submit, tell Claude `applied` and the tracker updates.
 
 ### 7. Optional, run a discovery scan
 
-> run S&P 500 scan
+careerflow ships 17 optional discovery scans, all triggered by chat phrases. Examples:
 
-> run funding round scan
+- `run S&P 500 scan` — surface S&P 500 roles matching your targeting
+- `run funding round scan` — Series B/C growth-stage roles
+- `run layoff scan` — companies rebounding from layoffs
+- `run IPO scan` — post-IPO and S-1 filing companies
+- `run aggregator sweep` — Indeed, Built In, Wellfound roles
+- `sync LinkedIn searches` — pull your LinkedIn saved searches
+- `run stealth scan` — stealth startups with notable founders
+- `run recruiter scan` — executive recruiters to engage
+- `run earnings scan` — companies with positive hiring signals in earnings calls
+- `run event scan` — sponsors at upcoming industry conferences
+- `run M&A scan` — acquirer companies in last 12 months
+- `run PE portfolio scan` — companies in major PE firm portfolios
+- `run [metro] scan` — all scans filtered to one geographic metro
+- `run culture scan on candidates_v<N>` — re-rank by Glassdoor data
+- `check salary band for [role] at [company]` — defensible salary range
+- `run followup scan` — applications needing followup
+- `scan alumni network` — warm intros from school + employer overlaps
+
+See `docs/scan_index.md` for the complete catalog.
 
 Outputs a ranked candidate list in the workspace root.
 
@@ -111,8 +129,24 @@ careerflow/
 ├── docs/
 │   ├── workflow.md                        # The runbook Claude follows
 │   ├── ats_optimization_rules.md          # Content + format + per-ATS playbook
-│   ├── sp500_scan_runtime.md              # S&P 500 short list scan procedure
-│   └── funding_round_scan_runtime.md      # Series B/C scan procedure
+│   ├── scan_index.md                      # Catalog of all 17 discovery scans
+│   ├── sp500_scan_runtime.md              # S&P 500 short list scan
+│   ├── funding_round_scan_runtime.md      # Series B/C funding round scan
+│   ├── layoff_scan_runtime.md             # Layoff comeback scan
+│   ├── ipo_scan_runtime.md                # IPO / S-1 scan
+│   ├── aggregator_sweep_runtime.md        # Job board aggregator sweep
+│   ├── linkedin_sync_runtime.md           # LinkedIn saved search sync
+│   ├── stealth_scan_runtime.md            # Stealth / pre-launch scan
+│   ├── recruiter_scan_runtime.md          # Executive search firm scan
+│   ├── earnings_scan_runtime.md           # Earnings call hiring signal scan
+│   ├── event_scan_runtime.md              # Conference / event scan
+│   ├── ma_scan_runtime.md                 # Acquisition / merger scan
+│   ├── pe_portfolio_scan_runtime.md       # PE-backed portfolio scan
+│   ├── metro_scan_runtime.md              # Geographic metro deep dive
+│   ├── culture_scan_runtime.md            # Glassdoor culture-fit scan
+│   ├── salary_band_check_runtime.md       # Salary band research
+│   ├── followup_scan_runtime.md           # Followup nudge scan
+│   └── alumni_scan_runtime.md             # Alumni network scan
 ├── scripts/
 │   ├── apply.py                           # End to end packet orchestrator
 │   ├── ingest_posting.py                  # URL fetch or paste, structured posting.json
@@ -124,6 +158,7 @@ careerflow/
 │   ├── write_cover_letter.py              # Cover letter generator
 │   ├── ats_keyword_score.py               # JD vocabulary density score checker
 │   ├── nda_audit.py                       # Customer name privacy audit
+│   ├── salary_band_check.py               # Local salary band lookup + research persistence
 │   ├── ingest_linkedin.py                 # LinkedIn URL ingester for onboarding
 │   └── init_workspace.py                  # Workspace scaffold script (called by setup)
 ├── skills/

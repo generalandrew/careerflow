@@ -15,10 +15,12 @@ Companies at Series B and C are in scaling mode. Product market fit, recent fres
 ## Inputs
 
 - Filter band: Series B or Series C announced in the last 12 months.
-- Sector filter (edit per user): software, SaaS, AI, data infrastructure, fintech infrastructure, vertical SaaS, developer tools, security, customer data platforms, agentic AI.
-- Default exclusions: construction, hardware/device manufacturing, semiconductors, biotech wet lab, energy, materials, real estate, pure consumer staples.
-- Region filter: US headquartered or US remote eligible.
+- Sector filter: read from `master/experience.json -> targeting -> industry_preferences` (with `industry_exclusions` applied).
+- Region filter: US headquartered or US remote eligible (or honor `preferences.geographic_constraints` for stricter geo).
 - Pipeline dedupe source: `applications.xlsx` Company column.
+- **User targeting profile from `master/experience.json -> targeting`**:
+  - `target_job_types` and `target_seniority_levels` filter the per-company role scan
+  - `exclude_job_types` and `exclude_seniority_levels` drop matches
 
 ## Procedure
 
@@ -32,7 +34,9 @@ Companies at Series B and C are in scaling mode. Product market fit, recent fres
    - `Series B 2026 vertical SaaS`
    - allowed_domains: `techcrunch.com`, `crunchbase.com`, `pitchbook.com`, `axios.com`, `pymnts.com`, `siliconangle.com`, `bloomberg.com`.
 2. Dedupe surfaced companies against sector exclude list and against `applications.xlsx`.
-3. For each remaining company, run one targeted WebSearch against the company's careers domain (greenhouse.io, lever.co, ashbyhq.com, or own subdomain) looking for Director, Senior Manager, Principal, Lead Architect, Solutions Architect, Solutions Engineer, Forward Deployed, Customer Engineering, or Professional Services openings.
+3. Load the user targeting profile from `master/experience.json -> targeting`. For each remaining company, run one targeted WebSearch against the company's careers domain (greenhouse.io, lever.co, ashbyhq.com, or own subdomain). Build the search query from `target_job_types` and `target_seniority_levels`. Score each result against the same filter:
+   - **Include only if** the role title contains at least one of `target_job_types` AND at least one of `target_seniority_levels`.
+   - **Drop if** the role title contains any of `exclude_job_types` OR any of `exclude_seniority_levels`.
 4. Compile results into `candidates_v<N>_funding_round_picks.md` where N is the next integer after the highest existing `candidates_v*` file.
 5. Group results into Tier 1, Tier 2, Tier 3.
 6. Report total live picks surfaced, total companies scanned, and recommended apply order.

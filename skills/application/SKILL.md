@@ -86,23 +86,48 @@ echo '<JSON payload>' | python3 scripts/write_summary.py
 
 This writes `posting_summary.md` and updates `applications.xlsx` with the row.
 
-### Step 7, Run the NDA audit
+### Step 7, Automated checks (run all unless user opts out)
+
+Three checks run after rendering, in order:
+
+**a. NDA audit**
 
 ```bash
 python3 scripts/nda_audit.py applications/<folder>
 ```
 
-If any customer names are flagged, anonymize them in tailored.json and re-render.
+If any customer names are flagged, anonymize them in tailored.json and re-render before continuing.
 
-### Step 8, Optional, ATS keyword density score
+**b. ATS keyword density score**
 
 ```bash
 python3 scripts/ats_keyword_score.py applications/<folder>
 ```
 
-If score is below 30%, revise the tailored.json to weave more JD vocabulary into bullets, re-render.
+If score is below 30%, revise tailored.json to weave more JD vocabulary into bullets, re-render. If score is 30 to 50%, surface the result but proceed.
 
-### Step 9, Present to the user
+**c. Salary band reality check**
+
+```bash
+python3 scripts/salary_band_check.py \
+    --role "<posting role>" \
+    --company "<posting company>" \
+    --level "<seniority from targeting>" \
+    --market "<posting location or user metro>"
+```
+
+Compare the band against:
+- The posted compensation (if present in posting.json)
+- The user's `compensation_targets.base_min` and `base_max` from experience.json
+
+Surface:
+- If posted comp is below user's base_min, flag "under-priced for your targets"
+- If posted comp is above user's base_max, flag "over your stated ceiling, stretch role"
+- If no comp posted, surface the defensible range as negotiation anchor
+
+The user can skip any check by saying "skip NDA audit", "skip keyword score", or "skip salary check" before this step.
+
+### Step 8, Present to the user
 
 Reply with:
 - Link to the resume DOCX
@@ -186,10 +211,26 @@ When the user says "cold outreach to [Company]" or "introduce me to [Company]":
 
 ## Discovery scans
 
-When the user says "run S&P 500 scan" or "run funding round scan":
+careerflow ships 17 optional discovery scans. See `docs/scan_index.md` for the complete catalog and trigger phrases.
 
-- See `docs/sp500_scan_runtime.md` and `docs/funding_round_scan_runtime.md`.
-- Output goes to `candidates_v<N>.md` in the workspace root, where N is the next integer after the highest existing candidates_v file.
+All scans:
+- Read `master/experience.json -> targeting` and filter results by the user's profile
+- Dedupe against `applications.xlsx`
+- Output to `candidates_v<N>_<scan_name>.md` in the workspace root, where N is the next integer after the highest existing `candidates_v*` file
+- Include the targeting profile used at the top of the output for reproducibility
+
+If the targeting profile is empty when a scan is triggered, surface a warning and ask the user to populate it first via the onboarding flow.
+
+When the user says any trigger phrase from `docs/scan_index.md`, load the corresponding `docs/<scan_name>_runtime.md` and follow its procedure.
+
+## Updating the targeting profile
+
+When the user says "update my targeting" or equivalent:
+
+1. Read current `master/experience.json -> targeting`.
+2. Ask which fields to revise (target_job_types, target_seniority_levels, excludes, industries, geographic, compensation).
+3. Update the file and confirm.
+4. Note that next discovery scan will use the new targeting.
 
 ## Reminders
 

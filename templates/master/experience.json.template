@@ -66,7 +66,55 @@
     "citizenship": "U.S. Citizen",
     "work_auth": "No sponsorship required",
     "languages": ["English"],
-    "career_motivation": "Career advancement, larger scope, higher impact"
+    "career_motivation": "Career advancement, larger scope, higher impact",
+    "geographic_constraints": {
+      "preferred_metros": ["Fort Worth, TX", "Dallas, TX"],
+      "willing_to_relocate": false,
+      "relocation_notes": ""
+    },
+    "compensation_targets": {
+      "base_min": null,
+      "base_max": null,
+      "ote_min": null,
+      "ote_max": null,
+      "equity_tolerance": "open",
+      "notes": ""
+    },
+    "salary_bands": {
+      "_meta": "Locally stored salary research, populated over time. Each entry is one job title plus company plus level plus geographic market. Used by scripts/salary_band_check.py and surfaced during the application flow as a 'compensation reality check'.",
+      "entries": []
+    }
+  },
+  "targeting": {
+    "target_job_types": [
+      "Solutions Engineer",
+      "Solutions Architect",
+      "Sales Engineer",
+      "Forward Deployed Engineer",
+      "Professional Services Director",
+      "Customer Engineering"
+    ],
+    "target_seniority_levels": [
+      "Senior",
+      "Principal",
+      "Director",
+      "Senior Director"
+    ],
+    "exclude_job_types": [
+      "Individual Contributor Software Engineer",
+      "Sales Quota Carrier (AE)",
+      "Marketing",
+      "HR"
+    ],
+    "exclude_seniority_levels": [
+      "Entry Level",
+      "Associate",
+      "VP",
+      "C-Suite"
+    ],
+    "industry_preferences": ["Software", "SaaS", "Fintech", "Data Infrastructure", "AI"],
+    "industry_exclusions": ["Construction", "Hardware Manufacturing"],
+    "notes": "Targeting is used by discovery scans to filter results and by per-application tailoring to weight relevance. Edit any time."
   },
   "leadership_signal": {
     "direct_reports_history": "None, or describe matrix/direct history",

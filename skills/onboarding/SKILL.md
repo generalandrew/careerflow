@@ -45,6 +45,48 @@ Ask:
 
 Capture into `experience.json -> personal` and `experience.json -> preferences`.
 
+### Phase 1.5, Targeting (CRITICAL, happens before career arc)
+
+This phase establishes what roles the user is hunting for. The answers drive discovery scan filters and tailoring weights for every subsequent application. Do not skip.
+
+Pre-read the uploaded resume (if any) before asking, to extract evidence of past job types and seniority levels. Propose candidate targets based on what you find, then confirm or revise with the user.
+
+Ask:
+
+- **Target job types**: which role families are you actively targeting. Examples: Solutions Engineer, Solutions Architect, Sales Engineer, Forward Deployed Engineer, Professional Services Director, Customer Engineering Director, AE, Sales Director, Product Manager, Engineering Manager, Software Engineer, Data Engineer, ML Engineer, Site Reliability Engineer. Capture as a list.
+
+- **Target seniority levels**: at what tiers. Examples: Entry, Associate, Senior, Staff, Principal, Lead Architect, Manager, Senior Manager, Director, Senior Director, VP, SVP, C-Suite. Capture as a list. Usually 2 to 4 adjacent tiers.
+
+- **Excluded job types**: anything you do NOT want surfaced in scans. Examples: pure individual contributor engineer at Senior+ years, quota-carrying AE without technical scope, Marketing, HR, Operations, etc.
+
+- **Excluded seniority levels**: tiers that are below you or above stretch. Examples: Entry, Associate, Mid for someone targeting Director+. Or excluding VP/SVP/C-Suite if those are too far a stretch.
+
+- **Industry preferences**: industries you want to target. Examples: Software, SaaS, Fintech, Data Infrastructure, AI, Healthcare, Retail, Media.
+
+- **Industry exclusions**: industries to filter out. Examples: Construction, Hardware Manufacturing, Energy, Defense, Tobacco, Gambling.
+
+- **Geographic preferences**: list preferred metros for hybrid/onsite. Willingness to relocate (yes/no/case-by-case). Travel tolerance percent.
+
+- **Compensation targets**: base min, base max, OTE min/max, equity tolerance.
+
+- **Salary bands (optional, build over time)**: do you have any known salary band data already collected? For example, an offer from 2024 for a Senior Solutions Engineer at a specific company. These get stored locally in `master/experience.json -> preferences -> salary_bands -> entries[]` and used by `scripts/salary_band_check.py` to give a reality check before each application. Format per entry: `{title, company, level, market, base_min, base_max, ote_min, ote_max, source, captured_date}`. Capture whatever the user offers now, and explain you'll add more as they research them.
+
+Probe rule: if the user says "I'm open to anything" push back. "Let's narrow it to 3 to 6 job type families and 2 to 4 seniority tiers so the discovery scans return signal not noise. We can broaden later if needed."
+
+Capture into `experience.json -> targeting` and `experience.json -> preferences -> geographic_constraints` and `experience.json -> preferences -> compensation_targets`.
+
+After this phase, surface what you captured:
+
+> Captured targeting:
+> - Job types: <list>
+> - Seniority: <list>
+> - Industries (in): <list>
+> - Industries (out): <list>
+> - Geographic: <preferred metros, relocation>, travel <pct>%
+> - Compensation: base $X to $Y, OTE $X to $Y
+>
+> Discovery scans will filter to these criteria. Per-application tailoring will weight relevance against this profile. You can edit any time by saying "update my targeting".
+
 ### Phase 2, Career arc, one role at a time, most recent first
 
 For each role, ask:

@@ -12,16 +12,26 @@ Chat-driven discovery runtime to surface live Director / Senior Manager / Princi
 
 - The 55-company short list maintained in this file (section "Short list, edit per user").
 - Pipeline dedupe source: `applications.xlsx` Company column. Drop any company already in pipeline.
+- **User targeting profile from `master/experience.json -> targeting`**:
+  - `target_job_types` — only surface roles matching these families
+  - `target_seniority_levels` — only surface roles at these tiers
+  - `exclude_job_types` — drop matches in these families
+  - `exclude_seniority_levels` — drop matches at these tiers
+  - `industry_preferences` and `industry_exclusions` — already applied to the short list, but re-check per surfaced role
 
 ## Procedure
 
 1. Load the short list from this file.
 2. Load `applications.xlsx`, build a Set of unique Company values, remove from scan list.
-3. Fan out parallel WebSearch calls in batches of 4, one search per company, allowed_domains limited to the company's careers domain (or top-level) when known.
-4. For each result, capture any Director, Senior Manager, Principal, Lead Architect, Sr Solution Engineer, Customer Engineering Director, Forward Deployed Engineer, Solutions Engineer hit. Skip generic careers portal links with no specific role.
-5. Compile results into `candidates_v<N>_sp500_picks.md` where N is the next integer after the highest existing `candidates_v*` file in the workspace root.
-6. Group results into Tier 1 (direct fit, apply first), Tier 2 (strong fit), Tier 3 (watch list).
-7. Report total live picks surfaced and recommended apply order in the chat reply.
+3. Load the user targeting profile from `master/experience.json -> targeting`. Build the search query terms from `target_job_types` and `target_seniority_levels`. Example: if target_job_types = ["Solutions Engineer", "Forward Deployed Engineer"] and target_seniority_levels = ["Senior", "Principal", "Director"], the per-company query becomes "Acme Senior OR Principal OR Director Solutions Engineer OR Forward Deployed Engineer remote 2026".
+4. Fan out parallel WebSearch calls in batches of 4, one search per company, allowed_domains limited to the company's careers domain (or top-level) when known.
+5. For each result, score against the targeting profile:
+   - **Include only if** the role title contains at least one of `target_job_types` AND at least one of `target_seniority_levels`.
+   - **Drop if** the role title contains any of `exclude_job_types` OR any of `exclude_seniority_levels`.
+   - Skip generic careers portal links with no specific role.
+6. Compile results into `candidates_v<N>_sp500_picks.md` where N is the next integer after the highest existing `candidates_v*` file in the workspace root.
+7. Group results into Tier 1 (direct fit, apply first), Tier 2 (strong fit), Tier 3 (watch list).
+8. Report total live picks surfaced and recommended apply order in the chat reply. Include the targeting profile used at the top of the output for reproducibility.
 
 ## Output schema
 

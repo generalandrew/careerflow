@@ -69,19 +69,30 @@ When a recruiter calls, the user says `callback from [Company]`. Claude searches
 
 ## Discovery scans
 
-Two optional discovery workflows ship with careerflow:
+careerflow ships 17 optional discovery scans. See `docs/scan_index.md` for the complete catalog and quick reference table.
 
-### S&P 500 short list scan
+All scans are optional. All read the user targeting profile from `master/experience.json -> targeting` and dedupe against `applications.xlsx`. Output goes to `candidates_v<N>_<scan_name>.md` (or a scan-specific output file) in the workspace root.
 
-Trigger phrases: `run S&P 500 scan`, `run sp500 scan`, `scan the short list`.
+The scan categories:
 
-See `docs/sp500_scan_runtime.md` for the procedure. Output goes to `candidates_v<N>_sp500_picks.md`.
+- **Named-employer scans**: S&P 500, funding round, layoff, IPO, M&A, PE portfolio, stealth
+- **Broad surface scans**: aggregator sweep, LinkedIn sync, conference / event
+- **Geographic narrowing**: metro deep dive
+- **Quality re-ranking**: culture fit
+- **Pipeline maintenance**: followup nudge, alumni network
+- **Research and prep**: recruiter scan, earnings hiring signal, salary band check
 
-### Series B/C funding round scan
+## Automated checks during applications
 
-Trigger phrases: `run funding round scan`, `scan series B C`, `scan growth stage`.
+When the user pastes a job URL and the application flow runs, Claude performs three automated checks after rendering the resume:
 
-See `docs/funding_round_scan_runtime.md` for the procedure. Output goes to `candidates_v<N>_funding_round_picks.md`.
+1. **NDA audit** (`scripts/nda_audit.py`). Scans the rendered DOCX, the tailored.json, and the posting_summary.md for any customer names from protected employers. If hits found, surfaces them and asks the user to anonymize before submitting.
+
+2. **ATS keyword density score** (`scripts/ats_keyword_score.py`). Scores the tailored.json against the posting.json. Reports density percent. If below 30%, surfaces missing high-priority terms and recommends weaving more JD vocabulary into Experience bullets.
+
+3. **Salary band reality check** (`scripts/salary_band_check.py` + `docs/salary_band_check_runtime.md`). Looks up local stored bands plus web-sourced data for the role + company + level. Reports defensible range and recommended anchor. Surfaces if posted compensation is below the user's `compensation_targets.base_min` (under-priced) or above ceiling (out-of-band reach).
+
+All three checks run automatically. The user can disable any check by saying "skip NDA audit", "skip keyword score", or "skip salary check" before the final render.
 
 ## Scripts reference
 
