@@ -1,0 +1,43 @@
+# Personal data, never commit
+master/experience.json
+master/interview_anecdotes.md
+master/assessments.md
+master/references.md
+master/source_documents/
+applications/
+applications.xlsx
+candidates_v*.md
+candidates.md
+candidates.xlsx
+
+# Generated outputs
+*.docx
+*.pdf
+*.tmp
+*.bak
+.~lock.*
+
+# OS and editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# Node
+node_modules/
+package-lock.json
+npm-debug.log
+
+# Secrets
+.env
+.env.local
+*.key
+*.pem
