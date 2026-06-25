@@ -1,0 +1,95 @@
+{
+  "_meta": {
+    "schema_version": "1.0",
+    "last_updated": "YYYY-MM-DD",
+    "sources": [],
+    "notes": "Bullets tagged keyword_optimized=true contain quantified claims sourced from a specific resume or LinkedIn export and should be vetted before reuse."
+  },
+  "personal": {
+    "name": "Your Full Name",
+    "location": "City, State (use nearest metro for ATS routing)",
+    "phone": "555-555-5555",
+    "email": "you@example.com",
+    "linkedin": "linkedin.com/in/yourhandle",
+    "headline_options": [
+      "Your primary professional headline, used in resume top line",
+      "Alternate variant, more sales focused",
+      "Alternate variant, more technical focused"
+    ]
+  },
+  "summary_options": {
+    "director": "Director-tier summary, 3 to 4 sentences, emphasizes leadership and outcomes.",
+    "vp": "VP-tier summary, scale and revenue framing.",
+    "keyword_optimized": "ATS-friendly summary with explicit JD vocabulary.",
+    "narrative": "Story-driven summary for cold outreach or networking."
+  },
+  "core_competencies": [
+    "Skill or capability 1",
+    "Skill or capability 2",
+    "Skill or capability 3"
+  ],
+  "roles": [
+    {
+      "id": "company_yyyy",
+      "company": "Company Name",
+      "title": "Your Latest Title at This Company",
+      "start": "YYYY-MM",
+      "end": "YYYY-MM or null for Present",
+      "location": "Remote / City, State",
+      "scope": "One-line description of your patch, team, or function.",
+      "industries": ["industry1", "industry2"],
+      "bullets": [
+        "Quantified achievement bullet 1",
+        "Quantified achievement bullet 2",
+        {
+          "text": "Achievement with quantified claim from a specific resume export",
+          "keyword_optimized": true
+        }
+      ],
+      "_note": "Optional context about how this role entry was assembled, e.g., collapsed from multiple sub-tenures per the SAP Single-Title pattern."
+    }
+  ],
+  "education": [
+    {
+      "school": "University Name",
+      "degree": "Bachelor of Arts/Science",
+      "field": "Your Major",
+      "graduation_year": 2013
+    }
+  ],
+  "nda_rule": "Customer names from prior employers are protected by NDA. Resume and cover letters describe customers only by industry vertical and scope, never by name. Exception, name customers only when the engagement was via a staffing/consulting placement (e.g., the staffing firm shows on W-2 record).",
+  "protected_employers": ["Employer1", "Employer2"],
+  "nda_customer_watchlist": [],
+  "preferences": {
+    "work_modes": ["Office", "Hybrid", "Remote"],
+    "travel_tolerance_pct": 25,
+    "citizenship": "U.S. Citizen",
+    "work_auth": "No sponsorship required",
+    "languages": ["English"],
+    "career_motivation": "Career advancement, larger scope, higher impact"
+  },
+  "leadership_signal": {
+    "direct_reports_history": "None, or describe matrix/direct history",
+    "largest_team_led": "N",
+    "resume_framing": "How you want leadership described on the resume, e.g., 'led teams of 15' when no formal direct reports",
+    "mentees_career": 0,
+    "hiring_loop": [],
+    "performance_reviews_owned": "TBD"
+  },
+  "public_artifacts": {
+    "podcasts": "None or list",
+    "open_source_contributions": "None or list",
+    "speaking": []
+  },
+  "certifications": [],
+  "skills": {
+    "Languages and Frameworks": [],
+    "Platforms": [],
+    "Architecture": [],
+    "Cloud and Infrastructure": [],
+    "AI and ML": [],
+    "Security and Compliance": [],
+    "Pursuit, Delivery, and Advisory": [],
+    "Industry Vertical Depth": []
+  }
+}
