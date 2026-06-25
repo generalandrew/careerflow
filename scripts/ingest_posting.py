@@ -53,8 +53,9 @@ def extract_meta(html):
     return out
 
 
-# Hints used for lightweight keyword extraction. Users can edit this list to
-# reflect their domain (Andrew's defaults skew technical solutions / consulting).
+# Hints used for lightweight keyword extraction. Users should edit this list
+# to reflect their target domain. Defaults below skew technical solutions
+# and consulting; replace with terms relevant to your industry.
 KEYWORD_HINTS = [
     "director","manager","principal","senior","lead","head","vp","vice president","architect","consultant","engineer",
     "solution","solutions","pre-sales","presales","delivery","implementation","architecture","strategy",

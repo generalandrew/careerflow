@@ -7,11 +7,11 @@ Reads JSON on stdin:
     "app_dir": "/abs/path",
     "company": "Acme",
     "role": "Senior Solutions Engineer",
-    "candidate_name": "Andrew Richard Miller",
-    "candidate_location": "Fort Worth, TX",
+    "candidate_name": "Your Full Name",
+    "candidate_location": "City, State",
     "candidate_phone": "555-555-5555",
     "candidate_email": "you@example.com",
-    "candidate_linkedin": "linkedin.com/in/...",
+    "candidate_linkedin": "linkedin.com/in/yourhandle",
     "hiring_contact_name": "MacKenzie",                    (optional)
     "hiring_contact_title": "Talent Acquisition Manager",  (optional)
     "salutation": "Dear MacKenzie,",                       (optional, defaults to "Dear Hiring Manager,")

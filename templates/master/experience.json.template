@@ -68,7 +68,7 @@
     "languages": ["English"],
     "career_motivation": "Career advancement, larger scope, higher impact",
     "geographic_constraints": {
-      "preferred_metros": ["Fort Worth, TX", "Dallas, TX"],
+      "preferred_metros": ["Your City, State", "Adjacent Metro, State"],
       "willing_to_relocate": false,
       "relocation_notes": ""
     },

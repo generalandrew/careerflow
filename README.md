@@ -213,9 +213,9 @@ careerflow enforces a default rule that customer names from your prior employers
 
 Pull requests welcome. Please open an issue first to discuss substantive changes. Code is GPL v3, contributions must be compatible.
 
-## Author
+## Privacy
 
-Created by Andrew Richard Miller.
+careerflow stores all personal data locally in the user's workspace folder. Nothing in this repository contains user-specific information. The user's master profile, applications, generated resumes, and discovery scan results live only on the user's machine and are excluded from version control by `.gitignore`.
 
 ## License
 

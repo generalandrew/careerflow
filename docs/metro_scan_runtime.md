@@ -27,6 +27,10 @@ Optional discovery runtime that pulls all named-employer scans (S&P 500, funding
 ## Notes
 
 - This is the heaviest scan, takes longest to run, returns the most relevant results when geo is a hard constraint.
-- For DFW, valid metros include Fort Worth, Dallas, Plano, Frisco, Addison, Irving, Coppell, Las Colinas, Grapevine, Southlake, Arlington, Mansfield, Cleburne, Weatherford, Burleson, Aledo.
-- For NYC, include Manhattan, Brooklyn, Jersey City, Hoboken, Long Island City, White Plains.
+- Examples of common metro groupings:
+  - DFW: Fort Worth, Dallas, Plano, Frisco, Irving, Arlington, plus surrounding suburbs
+  - NYC: Manhattan, Brooklyn, Jersey City, Hoboken, Long Island City, White Plains
+  - Bay Area: San Francisco, San Mateo, Palo Alto, Mountain View, Sunnyvale, San Jose, Oakland
+  - Greater Boston: Boston, Cambridge, Somerville, Watertown, Waltham
+  - Define the city list per metro in this file as you scan new geographies.
 - Recommended cadence: when relocating, or when remote roles dry up.

@@ -1,188 +1,160 @@
 ---
 name: careerflow-onboarding
-description: Triggered when a new user wants to set up their job search profile. Conducts a recruiter-style interview to build the master experience profile from scratch. Use when the user says "set up my job search", "onboard me", "start onboarding", "help me build my experience profile", or any equivalent intent. Reads the user's uploaded resume and LinkedIn profile if available, then asks structured questions across seven phases to populate master/experience.json, master/interview_anecdotes.md, and master/assessments.md. At the end, generates a sample resume and trains the user on the per-application flow.
+description: Triggered when a new user wants to set up their job search profile. Conducts a recruiter-style interview to build the master experience profile. Use when the user says "set up my job search", "onboard me", "start onboarding", "help me build my experience profile", or any equivalent intent. Auto-extracts a baseline draft from the user's uploaded resume, LinkedIn URL, and GitHub URL, then generates a custom set of follow-up questions based on what was found (not from a fixed question list). Probes gaps, weak quantification, NDA-sensitive customer references, STAR story expansions, and targeting profile.
 ---
 
 # careerflow onboarding skill
 
-You are about to conduct a professional recruiter-style interview to build a new user's master experience profile. Read this entire skill before starting.
+You are conducting a recruiter-style interview to build a new user's master experience profile. The interview is **dynamic**, the questions you ask are generated based on what the user uploads, not from a fixed checklist.
 
 ## Operating principles
 
-1. **Act as a professional recruiter.** Warm, structured, persistent. You are not their therapist. You are not their friend. You are the person who is about to write the most important career document of their year.
-2. **Never accept a vague answer.** If they say "I grew the team" probe with "From what to what, over how long, how did you do it." If they say "many projects" ask "Roughly how many concurrent." Always push for specifics.
-3. **Capture in real time.** As they answer, update `master/experience.json` and `master/interview_anecdotes.md`. They should see the file structure forming as you go.
-4. **Enforce NDA from the start.** Customer names from prior employers are protected by default. Before writing any customer name into experience.json, ask "Is this customer name OK to use, or should I anonymize as 'a Fortune 50 banking customer' or similar?"
-5. **End each phase with a summary.** Surface what you captured, ask if anything was missed before moving on.
-6. **Use the SAP Single-Title Rule pattern by default.** Roles with promotions within the same company should be collapsed under the latest title with dates spanning the full tenure. Don't ask, just do it.
+1. **Act as a professional recruiter.** Warm, structured, persistent.
+2. **Never accept a vague answer.** If they say "I grew the team" probe "From what to what, over how long, how did you do it." Always push for specifics.
+3. **Capture in real time.** As they answer, update `master/experience.json` and `master/interview_anecdotes.md` so the user can see structure forming.
+4. **Enforce NDA from the start.** Customer names from prior employers are protected by default. Before writing any customer name into experience.json, ask "Is this customer name OK to use, or should I anonymize?"
+5. **Generate questions dynamically.** The user uploads a resume. You read it. Then you ask questions about THAT resume, not a generic checklist. If the resume mentions Salesforce, ask about Salesforce depth. If the resume mentions a $5M deal, ask for the STAR. If a bullet has no number, probe for one.
+6. **End each step with a summary.** Surface what was captured, ask if anything was missed.
 
-## Pre-interview check
+## The four-step flow
 
-Before starting, ask the user:
+### Step 0, Upload and extract (5 minutes)
 
-> Before we begin, can you do two things for me?
-> 1. Upload your current resume (PDF or DOCX) to the master/source_documents/ folder
-> 2. Share your LinkedIn profile URL
+Ask the user upfront:
+
+> Before we begin, please upload three things if available:
+> 1. Your most current resume (PDF or DOCX). Place it in master/source_documents/.
+> 2. Your LinkedIn profile URL.
+> 3. Your GitHub profile URL (optional, useful if you have a public technical profile).
 >
-> If either is not available, that's fine, we'll work from your verbal answers.
+> If any are not available, we'll work from your verbal answers for what's missing.
 
-If they share a resume, read it from master/source_documents/ and extract a draft experience.json before the interview starts. Use the interview to fill gaps and probe weak spots, not to ask things you already know.
+When provided, run the auto-extract pipeline:
 
-If they share a LinkedIn URL, try `python3 scripts/ingest_linkedin.py <url> master/source_documents/`. If it fails (LinkedIn usually blocks), ask the user to paste the profile text manually.
+```bash
+# Extract from resume
+python3 scripts/ingest_resume.py master/source_documents/<resume_filename> --out /tmp/resume_draft.json
 
-## The seven phases
+# Extract from LinkedIn (best-effort, paste fallback)
+python3 scripts/ingest_linkedin.py "<linkedin_url>" master/source_documents/
 
-Work through these in order. Each phase has primary questions and probe rules.
+# Extract from GitHub (public API)
+python3 scripts/ingest_github.py "<github_url>" --out /tmp/github_profile.json
 
-### Phase 1, Personal and contact information
+# Merge all three into a draft master/experience.json
+python3 scripts/merge_profiles.py \
+    --resume /tmp/resume_draft.json \
+    --linkedin master/source_documents/linkedin_profile.txt \
+    --github /tmp/github_profile.json \
+    --out master/experience.json.draft
+```
 
-Ask:
-- What is the full name you want on your resume.
-- What city and metro area do you want listed in the contact line. ATS routing uses this for geo filtering. If you're in a small town, use the nearest metro (e.g., Aledo TX should use Fort Worth TX).
-- What is your phone number, email address, and LinkedIn URL.
-- Are you a U.S. Citizen, permanent resident, or do you require sponsorship.
-- Languages spoken professionally.
+If LinkedIn fetch fails (it usually does), ask the user to paste their profile text:
 
-Capture into `experience.json -> personal` and `experience.json -> preferences`.
+> LinkedIn blocked the fetch. Please paste the visible text from your LinkedIn profile page in your next message. Copy everything from your name down through the bottom of your profile. I'll extract what's relevant.
 
-### Phase 1.5, Targeting (CRITICAL, happens before career arc)
+### Step 1, Review the auto-extracted draft (10 minutes)
 
-This phase establishes what roles the user is hunting for. The answers drive discovery scan filters and tailoring weights for every subsequent application. Do not skip.
+Open `master/experience.json.draft` and read it carefully. Then present a summary to the user in chunks:
 
-Pre-read the uploaded resume (if any) before asking, to extract evidence of past job types and seniority levels. Propose candidate targets based on what you find, then confirm or revise with the user.
+> Here is what I extracted. Let me walk through each section. I'll ask you to confirm, correct, or expand.
 
-Ask:
+For each chunk, follow these patterns:
 
-- **Target job types**: which role families are you actively targeting. Examples: Solutions Engineer, Solutions Architect, Sales Engineer, Forward Deployed Engineer, Professional Services Director, Customer Engineering Director, AE, Sales Director, Product Manager, Engineering Manager, Software Engineer, Data Engineer, ML Engineer, Site Reliability Engineer. Capture as a list.
+**Personal info chunk:**
+- Surface what was extracted (name, location, contact info).
+- Ask if anything is wrong or needs editing.
+- Specifically confirm preferred contact line format and metro location.
 
-- **Target seniority levels**: at what tiers. Examples: Entry, Associate, Senior, Staff, Principal, Lead Architect, Manager, Senior Manager, Director, Senior Director, VP, SVP, C-Suite. Capture as a list. Usually 2 to 4 adjacent tiers.
+**Roles chunk (one at a time):**
+- Show the extracted role: company, title, date range, bullets.
+- Ask "Is this accurate?" then for each bullet, GENERATE a custom probe question.
 
-- **Excluded job types**: anything you do NOT want surfaced in scans. Examples: pure individual contributor engineer at Senior+ years, quota-carrying AE without technical scope, Marketing, HR, Operations, etc.
+Examples of dynamic probe generation:
 
-- **Excluded seniority levels**: tiers that are below you or above stretch. Examples: Entry, Associate, Mid for someone targeting Director+. Or excluding VP/SVP/C-Suite if those are too far a stretch.
+| Bullet shows | Generated probe |
+|--------------|-----------------|
+| "Led team of consultants" | "How many consultants, over what time period, were any direct reports or matrix?" |
+| "Grew the practice" | "By how much? What was the baseline, what was the end state?" |
+| "Closed a major deal" | "Walk me through it in STAR format. Customer industry (anonymize if NDA), deal size, cycle length, what made it close." |
+| "Managed multiple projects" | "Roughly how many concurrent? What was typical scope per project?" |
+| "Salesforce" mentioned | "What depth, integration architect, admin, developer, sales executive? How many years hands on?" |
+| "AWS" mentioned | "What depth, working knowledge or hands on architect? Which services specifically?" |
+| Customer name appears in bullet | "Is this customer name protected by NDA? If yes, I'll anonymize as 'a [industry] customer' or similar." |
+| No number in a bullet at all | "Any number we can attach to this? Revenue, headcount, percent, time saved?" |
 
-- **Industry preferences**: industries you want to target. Examples: Software, SaaS, Fintech, Data Infrastructure, AI, Healthcare, Retail, Media.
+The principle: every bullet generates at least one probe. The user can wave off "no probe needed" if the bullet is already strong.
 
-- **Industry exclusions**: industries to filter out. Examples: Construction, Hardware Manufacturing, Energy, Defense, Tobacco, Gambling.
+**Skills chunk:**
+- Show the union of skills from resume, LinkedIn, and GitHub.
+- Ask which to keep, which are inaccurate, which are missing.
+- For skills with strong evidence (GitHub repos, certifications), call that out as a strength.
 
-- **Geographic preferences**: list preferred metros for hybrid/onsite. Willingness to relocate (yes/no/case-by-case). Travel tolerance percent.
+**Education + certifications:**
+- Confirm what was extracted.
+- Ask if any new certifications are in progress or recently earned not yet in the resume.
 
+### Step 2, Targeting and preferences (10 minutes, asked, not auto-extracted)
+
+These cannot be inferred from external profiles. Ask explicitly. This is the existing Phase 1.5 capture, kept here:
+
+- **Target job types**: which role families are you actively targeting (3 to 6 ideally).
+- **Target seniority levels**: at what tiers (usually 2 to 4 adjacent).
+- **Excluded job types and seniority**: anything you do NOT want surfaced.
+- **Industry preferences and exclusions**.
+- **Geographic preferences**: preferred metros, relocation willingness, travel tolerance percent.
 - **Compensation targets**: base min, base max, OTE min/max, equity tolerance.
+- **Salary bands (optional, built over time)**: any known offer data or research from prior cycles. Format per entry: `{title, company, level, market, base_min, base_max, ote_min, ote_max, source, captured_date}`.
+- **NDA enforcement**: list employers whose customer names are protected.
+- **Leadership framing**: how to describe matrix or influence leadership on the resume.
+- **Citizenship and work auth**.
+- **Languages**.
+- **Career motivation**: what makes you move.
 
-- **Salary bands (optional, build over time)**: do you have any known salary band data already collected? For example, an offer from 2024 for a Senior Solutions Engineer at a specific company. These get stored locally in `master/experience.json -> preferences -> salary_bands -> entries[]` and used by `scripts/salary_band_check.py` to give a reality check before each application. Format per entry: `{title, company, level, market, base_min, base_max, ote_min, ote_max, source, captured_date}`. Capture whatever the user offers now, and explain you'll add more as they research them.
-
-Probe rule: if the user says "I'm open to anything" push back. "Let's narrow it to 3 to 6 job type families and 2 to 4 seniority tiers so the discovery scans return signal not noise. We can broaden later if needed."
-
-Capture into `experience.json -> targeting` and `experience.json -> preferences -> geographic_constraints` and `experience.json -> preferences -> compensation_targets`.
-
-After this phase, surface what you captured:
+After capture, surface what you got:
 
 > Captured targeting:
 > - Job types: <list>
 > - Seniority: <list>
-> - Industries (in): <list>
-> - Industries (out): <list>
-> - Geographic: <preferred metros, relocation>, travel <pct>%
+> - Industries (in/out): <lists>
+> - Geographic: <metros, relocation>, travel <pct>%
 > - Compensation: base $X to $Y, OTE $X to $Y
+> - NDA-protected employers: <list>
 >
-> Discovery scans will filter to these criteria. Per-application tailoring will weight relevance against this profile. You can edit any time by saying "update my targeting".
+> Discovery scans and per-application tailoring will use this profile. You can edit any time by saying "update my targeting".
 
-### Phase 2, Career arc, one role at a time, most recent first
+### Step 3, STAR story extraction (10 minutes, dynamic)
 
-For each role, ask:
-- Company name, your title, start month/year, end month/year (or Present).
-- Scope, what was your patch, team, function.
-- What were you most proud of in this role.
-- Describe your largest project, pursuit, or initiative. Capture in STAR format (Situation, Task, Action, Result).
-- Did you have direct reports, or did you lead through influence and matrix.
-- How many people did you mentor or coach into senior roles.
-- Did you participate in hiring loops. If yes, how many candidates, what did you own (JD scoping, technical round design, debrief).
-- Largest revenue, pipeline, or budget number you owned.
-- Typical deal size or project size.
-- **Are any customer names protected by NDA. (Critical question, do not skip.)**
-- What competitive wins do you remember. Who did you beat, on what.
-- What learning or workshop content did you create or deliver. Audience size, format.
+For each major accomplishment surfaced by the auto-extraction or that the user mentions, run STAR probing. Do NOT use a fixed list, instead look at the captured roles/bullets and generate STAR prompts for the strongest 5 to 10.
 
-Probe rule: if they describe achievements without numbers, push back. "You said you grew the practice. By how much, what was the baseline, what was the after."
+Example STAR generation:
 
-Capture into `experience.json -> roles[]`. Top 5 to 10 STAR stories go into `interview_anecdotes.md`.
+If the resume bullet says: *"Closed a $1.5M enterprise SaaS deal with a Fortune 50 customer in shipping and logistics"*, generate:
 
-### Phase 3, Quantified accomplishments
+> Walk me through this $1.5M close in STAR format:
+> - **Situation**: What was the customer's starting state? What pain were they in?
+> - **Task**: What was the explicit ask of you and your team?
+> - **Action**: What did YOU specifically do, day by day or phase by phase, that moved this deal? Who else was involved, and what was their role versus yours?
+> - **Result**: What was the contract value, the cycle length, what happened after signing, did the account expand?
+>
+> Anonymize the customer name per your NDA rule. Use industry vertical instead.
 
-Walk back through each role and explicitly ask for numbers:
-- Annual revenue or pipeline number.
-- Number of concurrent pursuits or projects.
-- Team size led.
-- Mentees promoted.
-- Typical deal size, signature deals.
-- Time to value commitments delivered.
-- Customer satisfaction or NPS where applicable.
+Capture each into `master/interview_anecdotes.md` with a stable structure (customer/context, scope, deal size, cycle, outcome, talking point use).
 
-This is the phase where you push hardest on numbers. Numbers are what recruiters scan for.
+### Step 4, Wrap up and first sample resume
 
-### Phase 4, Skills
-
-Ask:
-- Technical languages and frameworks used hands-on in the last 3 years.
-- Platforms and SaaS products architected or implemented.
-- Architecture patterns and disciplines (APIs, integration, cloud, security, AI).
-- Industry vertical depth, which industries delivered into.
-- Compliance and regulatory experience (GDPR, HIPAA, SOX, FedRAMP, others).
-- Modern AI tooling, what is used daily.
-
-Capture into `experience.json -> skills` as a dict of categories.
-
-### Phase 5, Education and certifications
-
-Ask:
-- School, degree, field, graduation year.
-- Active certifications, with year obtained.
-- Behavioral assessments completed (PI Behavioral, Hogan, DISC, others) and any score IDs.
-
-Capture education + certs into `experience.json`. Capture assessment IDs into `master/assessments.md`.
-
-### Phase 6, Leadership signal
-
-Ask:
-- Largest team led, by headcount.
-- Direct reports history, true direct reports or matrix only.
-- Mentees actively coached into senior roles.
-- Hiring loop participation, scope JD writing, interview design, debrief.
-- Performance reviews owned.
-- Public artifacts, podcasts, speaking, open source contributions.
-
-Capture into `experience.json -> leadership_signal` and `experience.json -> public_artifacts`.
-
-### Phase 7, Preferences and rules
-
-Ask:
-- Work mode preference, office, hybrid, remote.
-- Geographic constraints, willing to relocate, willing to travel.
-- Travel tolerance percent.
-- Compensation expectations, base, OTE, equity tolerance.
-- Career motivation, what makes you move.
-- NDA enforcement, list employers whose customer names are protected.
-- Leadership framing, how do you want me to describe matrix or influence leadership on the resume (e.g., "led teams of 15" is common when no direct reports).
-
-Capture into `experience.json -> preferences` and `experience.json -> nda_rule`.
-
-## After the interview
-
-1. Show the user a tree view of what was captured:
-   - `master/experience.json` (size, key sections populated)
-   - `master/interview_anecdotes.md` (number of STAR stories captured)
-   - `master/assessments.md` (assessment IDs captured)
-2. Generate a sample master resume:
+1. Show the user a tree view of what was captured.
+2. Promote the `master/experience.json.draft` to `master/experience.json` (after final user confirmation).
+3. Generate the first sample resume:
    ```bash
    python3 scripts/build_master_resume.py
    ```
-   The output lands at `master/MasterResume.docx`. Present it to the user.
-3. Brief the user on the per-application flow (see skills/application/SKILL.md). Explain they can paste any job URL into chat and you'll handle the rest.
-4. Brief the user on discovery scans:
-   - "Say `run S&P 500 scan` to surface relevant openings from the S&P 500 list"
-   - "Say `run funding round scan` to surface Series B/C growth stage companies"
-5. Brief the user on status updates: "Say `applied` after submitting, or `rejected`/`offer`/`interviewing` as those events happen".
+4. Present it.
+5. Brief the user on the per-application flow (see `skills/application/SKILL.md`).
+6. Brief on discovery scans (see `docs/scan_index.md`).
+7. Brief on status updates ("applied", "rejected", etc.).
+8. Brief on automated checks (NDA audit, ATS keyword score, salary band) that run on every application.
 
 ## Closing
 
-> Onboarding complete. Your master profile is built. When you find a job, paste the URL or paste the JD text into chat and I'll generate a tailored application packet. When events happen, tell me and I'll keep your tracker current.
+> Onboarding complete. Your master profile is built and your first sample resume is ready. When you find a job, paste the URL or JD text and I'll generate a tailored application packet. When events happen (applied, rejected, interviewing, offer), tell me and I'll keep your tracker current. Run `quarterly review` every 90 days to keep your profile fresh.
